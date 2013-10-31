@@ -17,6 +17,9 @@ import javax.swing.border.BevelBorder;
 import java.awt.Font;
 import javax.swing.JTextField;
 import javax.swing.JComboBox;
+
+import backup.Home;
+
 import com.toedter.calendar.JDateChooser;
 import javax.swing.JButton;
 import javax.swing.JSeparator;
@@ -68,10 +71,16 @@ public class Application extends JFrame {
 	JComboBox comboBox_2 = new JComboBox();
 	JComboBox comboBox_1 = new JComboBox();
 	JDateChooser dateChooser_1 = new JDateChooser();
+	JDateChooser dateChooser_2 = new JDateChooser();
+	JComboBox comboclient = new JComboBox();
+	JComboBox comboBox_5 = new JComboBox();
+	JComboBox comboBox_4 = new JComboBox();
+	JDateChooser dateChooser_3 = new JDateChooser();
 	
 	//requette d'inserer les valeurs dans les tables
 	String sql1="select * from fournisseur";
 	String sql2 = "select * from client";
+	String sql3 = "select * from administrateur";
 	
 	private JTable table_1;
 	private JTextField textField_13;
@@ -80,6 +89,7 @@ public class Application extends JFrame {
 	private JPasswordField passwordField_1;
 	JMenu Date_txt = new JMenu("Date");
 	JMenu Time_txt = new JMenu("Time");
+	private JTable tableAdministrateur;
 
 	/**
 	 * Launch the application.
@@ -111,13 +121,20 @@ public class Application extends JFrame {
 		ComboFournisseur();//appel de combo pour mettre les id du fournisseur dans le combo.
 		 Comboproduit() ;//appel de combo pour mettre les id du produit dans le combo.
 		 Combocmdfournisseur();//appel de combo pour mettre les id du cmdfournisseur dans le combo.
-		
+		 Comboclient();
+		 Cmdclient();
 		
 		JMenuBar menuBar = new JMenuBar();
 		setJMenuBar(menuBar);
 		
 		JMenu mnFichier = new JMenu("Fichier");
 		menuBar.add(mnFichier);
+		
+		final JMenu mnDate = new JMenu("Date");
+		menuBar.add(mnDate);
+		
+		final JMenu mnHeure = new JMenu("Heure");
+		menuBar.add(mnHeure);
 		
 		
 		
@@ -517,12 +534,13 @@ public class Application extends JFrame {
 		panel_11.add(textField_4);
 		textField_4.setColumns(10);
 		
-		JComboBox comboBox_3 = new JComboBox();
-		comboBox_3.setBounds(146, 33, 140, 20);
-		comboBox_3.setBorder(new BevelBorder (BevelBorder.LOWERED));
-		panel_11.add(comboBox_3);
 		
-		JDateChooser dateChooser_2 = new JDateChooser();
+		comboclient.setBounds(146, 33, 140, 20);
+		comboclient.setBorder(new BevelBorder (BevelBorder.LOWERED));
+		panel_11.add(comboclient);
+		dateChooser_2.setDateFormatString("yyyy-MM-dd ");
+		
+		
 		dateChooser_2.setBounds(146, 61, 140, 20);
 		dateChooser_2.setBorder(new BevelBorder (BevelBorder.LOWERED));
 		panel_11.add(dateChooser_2);
@@ -530,6 +548,28 @@ public class Application extends JFrame {
 		JButton btnEnregistrer_1 = new JButton("Enregistrer");
 		btnEnregistrer_1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
+				
+				
+				try{
+		            if ( textField_4.getText().equals("")) 
+		        {
+			JOptionPane.showMessageDialog(null, "Veuillez remplir la case numero commande s'il vous plait !","GeMagasinSoft",JOptionPane.WARNING_MESSAGE);
+		        }
+		        else{
+		        String sql = "Insert into cmd_client(code_cmd,num_client,date) values(?,?,?)";
+		        pst = Stconnection.getInstance().prepareStatement(sql);
+		        pst.setString(1, textField_4.getText());
+		        pst.setString(2, (String)comboclient.getSelectedItem());
+		        pst.setString(3, ((JTextField)dateChooser_2.getDateEditor().getUiComponent()).getText());
+		        pst.execute();
+		        
+		        textField_4.setText("");
+		        dateChooser_2.setDate(null);
+		        comboclient.setSelectedIndex(0);
+		        JOptionPane.showMessageDialog(null,"Les informations du nouvelle commande sont enregistrées avec succès");
+		        Comboclient();
+		            }
+		        }catch(Exception e){JOptionPane.showMessageDialog(null,e);}	
 			}
 		});
 		btnEnregistrer_1.setFont(new Font("Tahoma", Font.BOLD | Font.ITALIC, 14));
@@ -572,12 +612,12 @@ public class Application extends JFrame {
 		lblDate_3.setBounds(26, 101, 46, 14);
 		panel_12.add(lblDate_3);
 		
-		JComboBox comboBox_4 = new JComboBox();
+		
 		comboBox_4.setBounds(145, 8, 141, 20);
 		comboBox_4.setBorder(new BevelBorder (BevelBorder.LOWERED));
 		panel_12.add(comboBox_4);
 		
-		JComboBox comboBox_5 = new JComboBox();
+		
 		comboBox_5.setBounds(145, 39, 141, 20);
 		comboBox_5.setBorder(new BevelBorder (BevelBorder.LOWERED));
 		panel_12.add(comboBox_5);
@@ -588,12 +628,42 @@ public class Application extends JFrame {
 		panel_12.add(textField_5);
 		textField_5.setColumns(10);
 		
-		JDateChooser dateChooser_3 = new JDateChooser();
+		
+		dateChooser_3.setDateFormatString("yyyy-MM-dd");
 		dateChooser_3.setBounds(145, 101, 141, 20);
 		dateChooser_3.setBorder(new BevelBorder (BevelBorder.LOWERED));
 		panel_12.add(dateChooser_3);
 		
 		JButton btnSortir = new JButton("Sortir");
+		btnSortir.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				
+				
+				//Code pour enregistrer detail commande client
+		         try{
+		         String cmdfournisseur=((String)comboBox_4.getSelectedItem());
+		         String codeproduit=((String)comboBox_5.getSelectedItem());
+		         String quantite_sortie =(String)textField_5.getText().trim();
+		         String date =  (((JTextField)dateChooser_3.getDateEditor().getUiComponent()).getText());
+		        if ( textField_5.getText().equals("")) 
+		        {
+			JOptionPane.showMessageDialog(null, "Veuillez remplir toutes les cases vides s'il vous plait !","Ge_MagasinSoft",JOptionPane.WARNING_MESSAGE);
+		        }
+		        else{
+		         String strins ="insert into detail_cmd_cl values (null,\'"+cmdfournisseur+"\',\'"+codeproduit+"\',\'"+quantite_sortie+"\',\'"+date+"\')";
+		         UpdateFuction(strins);
+		         String strup = "update produit set quantite_stock = quantite_stock - "+quantite_sortie+" where idproduit = \'"+codeproduit+"\'";
+		         UpdateFuction(strup);
+		        JOptionPane.showMessageDialog(null,"La sortie du produit a eu lieu avec succès");
+		        textField_5.setText("");
+		        dateChooser_3.setDate(null);
+		        
+		            }
+		        }catch(Exception e){
+		        JOptionPane.showMessageDialog(null,e);
+		        } 	
+			}
+		});
 		btnSortir.setFont(new Font("Tahoma", Font.BOLD | Font.ITALIC, 14));
 		btnSortir.setBounds(320, 11, 89, 23);
 		btnSortir.setBorder(new BevelBorder (BevelBorder.RAISED));
@@ -742,7 +812,7 @@ public class Application extends JFrame {
 		panel_7.add(lblNewLabel_10);
 		
 		JButton btnClickerIci = new JButton("Cliquer ici !!");
-		btnClickerIci.setFont(new Font("Calibri", Font.BOLD | Font.ITALIC, 14));
+		btnClickerIci.setFont(new Font("Tahoma", Font.BOLD | Font.ITALIC, 13));
 		btnClickerIci.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				
@@ -753,18 +823,18 @@ public class Application extends JFrame {
 					UpdateFuction(squery);}
 			}
 		});
-		btnClickerIci.setBounds(511, 136, 121, 30);
+		btnClickerIci.setBounds(10, 388, 121, 30);
 		btnClickerIci.setBorder(new BevelBorder (BevelBorder.RAISED));
 		panel_7.add(btnClickerIci);
 		
 		JLabel lblNewLabel_11 = new JLabel("Modifier droit ");
 		lblNewLabel_11.setFont(new Font("Tahoma", Font.BOLD | Font.ITALIC, 12));
-		lblNewLabel_11.setBounds(529, 111, 103, 14);
+		lblNewLabel_11.setBounds(10, 363, 103, 14);
 		panel_7.add(lblNewLabel_11);
 		
 		JPanel panel_17 = new JPanel();
 		panel_17.setBorder(new TitledBorder(new BevelBorder(BevelBorder.RAISED, null, null, null, null), "Donner droit", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		panel_17.setBounds(34, 42, 240, 134);
+		panel_17.setBounds(10, 41, 240, 134);
 		panel_7.add(panel_17);
 		panel_17.setLayout(null);
 		
@@ -817,6 +887,7 @@ public class Application extends JFrame {
 	        			                 if(!str1.equals("")){
 		                     	         String strcpte = "insert into administrateur values(null,\'" + str + "\',md5(\'" + str1 + "\'))";
 		                     	         UpdateFuction(strcpte);
+		                     	        Update_Table(tableAdministrateur,sql3);
 		                                 }
 	    	       
 	        		  } else{
@@ -837,6 +908,42 @@ public class Application extends JFrame {
 		btnAffecter.setBorder(new BevelBorder (BevelBorder.RAISED));
 		panel_17.add(btnAffecter);
 		
+		JScrollPane scrollPane_2 = new JScrollPane();
+		scrollPane_2.setBounds(260, 51, 372, 116);
+		panel_7.add(scrollPane_2);
+		
+		tableAdministrateur = new JTable();
+		scrollPane_2.setViewportView(tableAdministrateur);
+		Update_Table(tableAdministrateur,sql3);
+		
+		
+		JButton btnBackUp = new JButton("back up");
+		btnBackUp.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				
+				try {
+					Home frame = new Home();
+					frame.setVisible(true);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
+		btnBackUp.setFont(new Font("Tahoma", Font.BOLD | Font.ITALIC, 13));
+		btnBackUp.setBounds(10, 310, 121, 30);
+		btnBackUp.setBorder(new BevelBorder (BevelBorder.RAISED));
+		panel_7.add(btnBackUp);
+		
+		JLabel lblSauvegarderLaBd = new JLabel("Sauvegarder la BD");
+		lblSauvegarderLaBd.setFont(new Font("Californian FB", Font.BOLD | Font.ITALIC, 16));
+		lblSauvegarderLaBd.setBounds(10, 281, 145, 25);
+		panel_7.add(lblSauvegarderLaBd);
+		
+		ImageIcon img5=new ImageIcon(getClass().getResource("/resources/arriere.gif"));
+		JLabel lblNewLabel_13 = new JLabel(img5);
+		lblNewLabel_13.setBounds(0, 0, 642, 443);
+		panel_7.add(lblNewLabel_13);
+		Currentdate( mnDate, mnHeure);
 	}   //fin du constructeur
 	
 	
@@ -865,6 +972,7 @@ public class Application extends JFrame {
 	       table.setModel(DbUtils.resultSetToTableModel(rs));
 	        }catch(Exception e){JOptionPane.showMessageDialog(null, e);}
 	        }
+	 
 	 //fonction pour mettre les id du fournisseur dans le combo
 	 private void ComboFournisseur(){
 		 combofournisseur.removeAllItems();
@@ -898,6 +1006,7 @@ public class Application extends JFrame {
 	//fonction pour mettre les id du cmdcommande dans le combo
 		 private void Comboproduit(){
 			 comboBox_2.removeAllItems();
+			 comboBox_5.removeAllItems();
 		    try{
 		     String sql = "select * from produit";
 		     pst = Stconnection.getInstance().prepareStatement(sql);
@@ -905,10 +1014,74 @@ public class Application extends JFrame {
 		     while(rs.next()){
 		     String code2 = rs.getString("idproduit");
 		     comboBox_2.addItem(code2);
+		     comboBox_5.addItem(code2);
 		    
 		     }
 		    }catch(Exception e){JOptionPane.showMessageDialog(null, e);}
 		 }
-	 
-	 
+		 
+		 
+		 
+		 
+		 private void Comboclient(){
+			 comboclient.removeAllItems();
+		    try{
+		     String sql = "select * from client";
+		     pst = Stconnection.getInstance().prepareStatement(sql);
+		     rs = pst.executeQuery();
+		     while(rs.next()){
+		     String code5 = rs.getString("idclient");
+		     comboclient.addItem(code5);
+		    
+		     }
+		    }catch(Exception e){JOptionPane.showMessageDialog(null, e);}
+		 }
+		 
+		 //fonction pour mettre les id du cmdcommande dans le combo
+		 private void Cmdclient(){
+			 comboBox_4.removeAllItems();
+		    try{
+		     String sql = "select * from cmd_client";
+		     pst = Stconnection.getInstance().prepareStatement(sql);
+		     rs = pst.executeQuery();
+		     while(rs.next()){
+		     String code1 = rs.getString("code_cmd");
+		     comboBox_4.addItem(code1);
+		    
+		     }
+		    }catch(Exception e){JOptionPane.showMessageDialog(null, e);}
+		 }
+		 
+		 public void Currentdate(final JMenu menuDate,final JMenu menuHeure)
+		 {
+		 	
+		 	
+		 	Thread clock=new Thread(){;
+		 	
+		 	public void run(){
+		 		
+		 		for(;;){
+		 			
+		 			
+		 			Calendar cal=new GregorianCalendar();
+		 			int month=cal.get(Calendar.MONTH);
+		 			int year=cal.get(Calendar.YEAR);
+		 			int day=cal.get(Calendar.DAY_OF_MONTH);
+		 			menuDate.setText("     "+year+"-"+(month+1)+"-"+day+"     ");
+		 			
+		 			int second=cal.get(Calendar.SECOND);
+		 			int minute=cal.get(Calendar.MINUTE);
+		 			int hour=cal.get(Calendar.HOUR);
+		 			menuHeure.setText("     "+hour+":"+(minute)+":"+second+"     ");
+		 			try{
+		 		sleep(1000);
+		 		}catch(InterruptedException ex){}
+		 	 //   { Logger.getLogger(Gerer.class.getName()).log    }
+
+		 		}
+		 		}
+		 	};
+
+		      clock.start();
+		   }// fn de la fct Currentdate
 }

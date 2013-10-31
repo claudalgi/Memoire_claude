@@ -197,8 +197,9 @@ public class Creer extends JDialog {
 		btnModifier.setBorder(new BevelBorder (BevelBorder.RAISED));
 		panel_1.add(btnModifier);
 		
-		
-		scrollPane.addMouseListener(new MouseAdapter() {
+		table = new JTable();
+		Update_Table(table,sql1);
+		table.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
 				
@@ -229,8 +230,7 @@ public class Creer extends JDialog {
 		scrollPane.setBounds(54, 210, 428, 163);
 		panel.add(scrollPane);
 		
-		table = new JTable();
-		Update_Table(table,sql1);
+		
 		scrollPane.setViewportView(table);
 	}
 	//definition des differentes fonction
